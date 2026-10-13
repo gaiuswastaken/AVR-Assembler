@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+# AVR-ASSEMBLE
+# A BASH helper that takes an argument for the name of the file and automates the assembly for ATmega328p microprocessor
+# used in devices such as the Arduino Nano
+# Created by: gauiuswastaken
+# Created on: 12/10/2026
+# Updated on:
+
+set -euo pipefail
+
+# Check arguments
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <source.asm>" >&2
+    exit 1
+fi
+
+src="$1"
+
+if [[ ! -f "$src" ]]; then
+    echo "Error: File not found: $src" >&2
+    exit 1
+fi
+
+# Output files, based on input filename
+base="${src%.*}"
+obj="${base}.o"
+elf="${base}.elf"
+hex="${base}.hex"
+
+# Assemble for ATmega328P
+avr-as -g -mmcu=atmega328p -o "$obj" "$src"
+
+# Link the object file
+avr-ld -o "$elf" "$obj"
+
+# Convert ELF to Intel HEX
+avr-objcopy -O ihex -R .eeprom "$elf" "$hex"
+
+avrdude -C /etc/avrdude.conf -p atmega328p -c arduino -P /dev/ttyUSB0 -D -U "flash:w:$hex:i"
+
+echo "Assembly successful."
+echo "Object: $obj"
+echo "ELF:    $elf"
+echo "HEX:    $hex"
