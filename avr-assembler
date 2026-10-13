@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
-# AVR-ASSEMBLE
-# A BASH helper that takes an argument for the name of the file and automates the assembly for ATmega328p microprocessor
+# AVR-ASSEMBLER
+# A BASH helper that takes an argument for the name of the file and automates the assembly
+# and upload to EEPROM for the ATmega328p microprocessor
 # used in devices such as the Arduino Nano
-# Created by: gauiuswastaken
+# Created by: gaiuswastaken
 # Created on: 12/10/2026
-# Updated on:
+# Updated on: 13/10/2026
+# Update detail: Tweaked comments to be more descriptive
 
+# Ensures that script terminates on error (with error message), unset variables and errors in a command after a |.
 set -euo pipefail
 
 # Check arguments
@@ -37,6 +40,7 @@ avr-ld -o "$elf" "$obj"
 # Convert ELF to Intel HEX
 avr-objcopy -O ihex -R .eeprom "$elf" "$hex"
 
+# Writes the new program onto the EEPROM (of an Arduino Nano, if using something else, feel free to edit the command)
 avrdude -C /etc/avrdude.conf -p atmega328p -c arduino -P /dev/ttyUSB0 -D -U "flash:w:$hex:i"
 
 echo "Assembly successful."
